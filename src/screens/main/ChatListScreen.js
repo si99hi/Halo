@@ -29,8 +29,7 @@ export default function ChatListScreen({ navigation }) {
 
     const q = query(
       collection(db, 'chats'),
-      where('participants', 'array-contains', currentUser.uid),
-      orderBy('updatedAt', 'desc')
+      where('participants', 'array-contains', currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -55,6 +54,14 @@ export default function ChatListScreen({ navigation }) {
           };
         })
       );
+
+      // Sort chats by updatedAt descending on the client-side to avoid needing a composite index
+      chats.sort((a, b) => {
+        const timeA = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : (a.updatedAt?.seconds ? a.updatedAt.seconds * 1000 : 0);
+        const timeB = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : (b.updatedAt?.seconds ? b.updatedAt.seconds * 1000 : 0);
+        return timeB - timeA;
+      });
+
       setConversations(chats);
       setLoading(false);
     });
