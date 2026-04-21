@@ -1,0 +1,155 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../config/firebase';
+import Avatar from '../../components/Avatar';
+import { colors, spacing, radius, typography, shadows } from '../../config/theme';
+
+export default function ProfileScreen() {
+  const user = auth.currentUser;
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: () => signOut(auth),
+        },
+      ]
+    );
+  };
+
+  const displayName = user?.displayName || 'User';
+  const email = user?.email || '';
+
+  return (
+    <View style={styles.container}>
+      {/* Profile Card */}
+      <View style={styles.card}>
+        <View style={styles.avatarWrapper}>
+          <Avatar name={displayName} size={88} />
+          <View style={styles.onlineDot} />
+        </View>
+        <Text style={styles.name}>{displayName}</Text>
+        <Text style={styles.email}>{email}</Text>
+      </View>
+
+      {/* Info Section */}
+      <View style={styles.section}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Display Name</Text>
+          <Text style={styles.infoValue}>{displayName}</Text>
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Email Address</Text>
+          <Text style={styles.infoValue}>{email}</Text>
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>User ID</Text>
+          <Text style={[styles.infoValue, styles.uid]} numberOfLines={1}>
+            {user?.uid}
+          </Text>
+        </View>
+      </View>
+
+      {/* Logout Button */}
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        onPress={handleLogout}
+        activeOpacity={0.85}
+      >
+        <Text style={styles.logoutText}>Sign Out</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+  },
+  card: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.bgCard,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
+    ...shadows.card,
+  },
+  avatarWrapper: {
+    position: 'relative',
+    marginBottom: spacing.md,
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: colors.online,
+    borderWidth: 2,
+    borderColor: colors.bgCard,
+  },
+  name: { ...typography.h2, marginBottom: spacing.xs },
+  email: { ...typography.bodySmall },
+  section: {
+    backgroundColor: colors.bgCard,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.xl,
+    ...shadows.card,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    gap: spacing.md,
+  },
+  infoLabel: { ...typography.label, flex: 0 },
+  infoValue: {
+    ...typography.body,
+    flex: 1,
+    textAlign: 'right',
+    color: colors.textSecondary,
+  },
+  uid: { fontSize: 11, fontFamily: 'monospace' },
+  divider: {
+    height: 1,
+    backgroundColor: colors.divider,
+  },
+  logoutBtn: {
+    backgroundColor: 'rgba(255, 107, 107, 0.12)',
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 107, 0.3)',
+  },
+  logoutText: {
+    color: colors.error,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+});
