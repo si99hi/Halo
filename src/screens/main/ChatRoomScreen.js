@@ -149,5 +149,5 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   emptyIcon: { fontSize: 52 },
-  emptyText: { ...typography.bodySmall, textAlign: 'center' },
+  emptyText: { ...typography.bodySmall, textAlign: 'center', fontFamily: 'Inter_400Regular' },
 });

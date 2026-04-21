@@ -17,17 +17,17 @@ const ChatsStack = createStackNavigator();
 const UsersStack = createStackNavigator();
 
 const headerStyle = {
-  backgroundColor: colors.bgCard,
+  backgroundColor: '#FFFFFF',
   shadowColor: 'transparent',
   elevation: 0,
-  borderBottomWidth: 1,
-  borderBottomColor: colors.border,
+  borderBottomWidth: StyleSheet.hairlineWidth,
+  borderBottomColor: '#000000',
 };
 
 const headerTitleStyle = {
-  color: colors.textPrimary,
-  fontSize: 18,
-  fontWeight: '700',
+  fontFamily: 'PlayfairDisplay_700Bold',
+  color: '#000000',
+  fontSize: 22,
 };
 
 // Chats Stack (ChatList → ChatRoom)
@@ -143,20 +143,18 @@ export default function MainStack() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.bgCard,
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
+    backgroundColor: '#FFFFFF',
+    borderTopColor: '#000000',
+    borderTopWidth: StyleSheet.hairlineWidth,
     height: 62,
     paddingBottom: 8,
     paddingTop: 6,
   },
   tabLabel: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
-    fontWeight: '600',
   },
   activeIconWrapper: {
-    backgroundColor: 'rgba(108, 99, 255, 0.12)',
-    borderRadius: radius.sm,
     padding: 4,
   },
 });

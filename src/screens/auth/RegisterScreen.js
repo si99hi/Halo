@@ -14,13 +14,16 @@ import {
 import {
   createUserWithEmailAndPassword,
   updateProfile,
+  sendEmailVerification,
+  signOut,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 import { colors, spacing, radius, typography, shadows } from '../../config/theme';
 
 export default function RegisterScreen({ navigation }) {
   const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,8 +31,15 @@ export default function RegisterScreen({ navigation }) {
   const [showPass, setShowPass] = useState(false);
 
   const handleRegister = async () => {
-    if (!displayName.trim() || !email.trim() || !password.trim()) {
+    const rawUsername = username.trim().toLowerCase();
+    
+    if (!displayName.trim() || !rawUsername || !email.trim() || !password.trim()) {
       Alert.alert('Missing fields', 'Please fill in all fields.');
+      return;
+    }
+    
+    if (!/^[a-z0-9_]+$/.test(rawUsername)) {
+      Alert.alert('Invalid Username', 'Usernames can only contain lowercase letters, numbers, and underscores.');
       return;
     }
     if (password.length < 6) {
@@ -43,6 +53,15 @@ export default function RegisterScreen({ navigation }) {
 
     setLoading(true);
     try {
+      // Check if username is taken
+      const q = query(collection(db, 'users'), where('username', '==', rawUsername));
+      const snapshot = await getDocs(q);
+      
+      if (!snapshot.empty) {
+        Alert.alert('Username taken', 'This username is already in use. Please choose another.');
+        setLoading(false);
+        return;
+      }
       const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
 
       // Update Firebase Auth profile
@@ -53,8 +72,18 @@ export default function RegisterScreen({ navigation }) {
         uid: cred.user.uid,
         email: email.trim().toLowerCase(),
         displayName: displayName.trim(),
+        username: rawUsername,
         createdAt: serverTimestamp(),
       });
+
+      // Send verification and sign out locally so they don't bypass security
+      await sendEmailVerification(cred.user);
+      await signOut(auth);
+      
+      Alert.alert(
+        'Account Created',
+        'We sent a verification link to your email. Please verify your account before logging in.'
+      );
     } catch (err) {
       let msg = 'Registration failed. Please try again.';
       if (err.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
@@ -90,6 +119,19 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setDisplayName}
             placeholder="Your name"
             placeholderTextColor={colors.textMuted}
+            returnKeyType="next"
+          />
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Username</Text>
+          <TextInput
+            style={styles.input}
+            value={username}
+            onChangeText={setUsername}
+            placeholder="e.g. minimalist_guru"
+            placeholderTextColor="#999999"
+            autoCapitalize="none"
             returnKeyType="next"
           />
         </View>
@@ -192,35 +234,32 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
+    alignItems: 'flex-start',
+    marginBottom: spacing.xxl,
   },
   logoWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: 'rgba(108,99,255,0.15)',
+    width: 64,
+    height: 64,
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(108,99,255,0.3)',
   },
-  logoIcon: { fontSize: 38 },
-  title: { ...typography.h1, marginBottom: spacing.xs },
-  subtitle: { ...typography.bodySmall, textAlign: 'center' },
+  logoIcon: { fontSize: 24, color: '#FFF' },
+  title: { ...typography.h1, marginBottom: spacing.xs, fontFamily: 'PlayfairDisplay_700Bold' },
+  subtitle: { ...typography.bodySmall, textAlign: 'left', fontFamily: 'Inter_400Regular' },
   form: { gap: spacing.md },
   fieldGroup: { gap: spacing.xs },
-  label: { ...typography.label },
+  label: { ...typography.label, fontFamily: 'Inter_600SemiBold' },
   input: {
-    backgroundColor: colors.bgInput,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
+    borderColor: '#000000',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md - 2,
-    color: colors.textPrimary,
+    color: '#000000',
     fontSize: 15,
+    fontFamily: 'Inter_400Regular',
   },
   passwordWrapper: { position: 'relative' },
   passwordInput: { paddingRight: 50 },
@@ -233,18 +272,16 @@ const styles = StyleSheet.create({
   },
   eyeIcon: { fontSize: 18 },
   primaryBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
+    backgroundColor: '#000000',
     paddingVertical: spacing.md,
     alignItems: 'center',
     marginTop: spacing.sm,
-    ...shadows.button,
   },
   primaryBtnDisabled: { opacity: 0.6 },
   primaryBtnText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 0.5,
   },
   footer: {
@@ -252,10 +289,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.xl,
   },
-  footerText: { ...typography.bodySmall },
+  footerText: { ...typography.bodySmall, fontFamily: 'Inter_400Regular' },
   footerLink: {
-    color: colors.primary,
+    color: '#000000',
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
+    textDecorationLine: 'underline',
   },
 });

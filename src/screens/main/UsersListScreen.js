@@ -5,34 +5,47 @@ import {
   StyleSheet,
   ActivityIndicator,
   Text,
+  TextInput,
 } from 'react-native';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 import UserItem from '../../components/UserItem';
 import { getOrCreateChat } from '../../utils/chatUtils';
-import { colors, spacing, typography } from '../../config/theme';
+import { colors, spacing, typography, radius } from '../../config/theme';
 
 export default function UsersListScreen({ navigation }) {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const currentUser = auth.currentUser;
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, 'users'));
-        const all = snapshot.docs
-          .map((d) => d.data())
-          .filter((u) => u.uid !== currentUser.uid);
-        setUsers(all);
-      } catch (err) {
-        console.error('Failed to load users:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, []);
+  const handleSearch = async (text) => {
+    setSearchQuery(text);
+    const search = text.trim().toLowerCase();
+    
+    if (!search) {
+      setUsers([]);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const q = query(
+        collection(db, 'users'),
+        where('username', '>=', search),
+        where('username', '<=', search + '\uf8ff')
+      );
+      const snapshot = await getDocs(q);
+      const all = snapshot.docs
+        .map((d) => d.data())
+        .filter((u) => u.uid !== currentUser.uid);
+      setUsers(all);
+    } catch (err) {
+      console.error('Failed to search users:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUserPress = async (user) => {
     try {
@@ -43,17 +56,33 @@ export default function UsersListScreen({ navigation }) {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      {users.length === 0 ? (
+      <View style={styles.searchHeader}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by username..."
+          placeholderTextColor="#999999"
+          value={searchQuery}
+          onChangeText={handleSearch}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      </View>
+      
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#000000" />
+        </View>
+      ) : searchQuery.trim() === '' ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyIcon}>🔍</Text>
+          <Text style={styles.emptyTitle}>Find a User</Text>
+          <Text style={styles.emptySubtitle}>
+            Search by their exact Snapchat-style username.
+          </Text>
+        </View>
+      ) : users.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>👥</Text>
           <Text style={styles.emptyTitle}>No other users yet</Text>
@@ -76,8 +105,24 @@ export default function UsersListScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  searchHeader: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#000000',
+  },
+  searchInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#000000',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+    color: '#000000',
+    fontSize: 15,
+    fontFamily: 'Inter_400Regular',
+  },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
   list: { paddingBottom: spacing.xl },
   empty: {
     flex: 1,
@@ -87,6 +132,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   emptyIcon: { fontSize: 60, marginBottom: spacing.md },
-  emptyTitle: { ...typography.h2, textAlign: 'center' },
-  emptySubtitle: { ...typography.bodySmall, textAlign: 'center' },
+  emptyTitle: { ...typography.h2, textAlign: 'center', fontFamily: 'PlayfairDisplay_700Bold' },
+  emptySubtitle: { ...typography.bodySmall, textAlign: 'center', fontFamily: 'Inter_400Regular' },
 });

@@ -39,28 +39,27 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   senderName: {
-    ...typography.caption,
-    color: colors.primary,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: colors.textSecondary,
     marginBottom: 2,
     marginLeft: spacing.sm,
-    fontWeight: '600',
   },
   bubble: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
-    borderRadius: radius.lg,
+    borderRadius: 0, // Sharp edges for minimal aesthetic
   },
   bubbleOwn: {
     backgroundColor: colors.bgBubbleOwn,
-    borderBottomRightRadius: 4,
   },
   bubbleOther: {
     backgroundColor: colors.bgBubbleOther,
-    borderBottomLeftRadius: 4,
     borderWidth: 1,
     borderColor: colors.border,
   },
   text: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 15,
     lineHeight: 22,
   },
@@ -71,6 +70,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   time: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 10,
     marginTop: 4,
   },

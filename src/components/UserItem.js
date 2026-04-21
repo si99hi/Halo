@@ -4,7 +4,8 @@ import Avatar from './Avatar';
 import { colors, spacing, typography, radius } from '../config/theme';
 
 export default function UserItem({ user, onPress }) {
-  const { displayName, email } = user;
+  const { displayName, email, username } = user;
+  const displayHandle = username ? `@${username}` : email;
 
   return (
     <TouchableOpacity
@@ -15,10 +16,10 @@ export default function UserItem({ user, onPress }) {
       <Avatar name={displayName} size={50} />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>{displayName}</Text>
-        <Text style={styles.email} numberOfLines={1}>{email}</Text>
+        <Text style={styles.username} numberOfLines={1}>{displayHandle}</Text>
       </View>
       <View style={styles.badge}>
-        <Text style={styles.badgeText}>Chat</Text>
+        <Text style={styles.badgeText}>Message</Text>
       </View>
     </TouchableOpacity>
   );
@@ -39,24 +40,25 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   name: {
-    ...typography.h3,
+    fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 16,
   },
-  email: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+  username: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: '#666666',
   },
   badge: {
-    backgroundColor: 'rgba(108, 99, 255, 0.15)',
+    backgroundColor: '#000000',
     paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs,
-    borderRadius: radius.full,
+    borderRadius: 0,
     borderWidth: 1,
-    borderColor: 'rgba(108, 99, 255, 0.3)',
+    borderColor: '#000000',
   },
   badgeText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
   },
 });

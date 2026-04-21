@@ -1,33 +1,33 @@
 export const colors = {
   // Backgrounds
-  bg: '#0D0F14',
-  bgCard: '#161A23',
-  bgInput: '#1E2330',
-  bgBubbleOwn: '#6C63FF',
-  bgBubbleOther: '#1E2330',
+  bg: '#FFFFFF',
+  bgCard: '#FFFFFF',
+  bgInput: '#F5F5F5',
+  bgBubbleOwn: '#000000',
+  bgBubbleOther: '#F5F5F5',
 
   // Accent
-  primary: '#6C63FF',
-  primaryLight: '#8B85FF',
-  primaryDark: '#4F48CC',
+  primary: '#000000',
+  primaryLight: '#333333',
+  primaryDark: '#000000',
 
   // Text
-  textPrimary: '#F0F2FF',
-  textSecondary: '#8A92A6',
-  textMuted: '#4A5065',
+  textPrimary: '#000000',
+  textSecondary: '#666666',
+  textMuted: '#999999',
   textOnPrimary: '#FFFFFF',
 
   // UI
-  border: '#252A38',
-  divider: '#1E2330',
-  error: '#FF6B6B',
-  success: '#4ECDC4',
-  online: '#4ECDC4',
+  border: '#EEEEEE',
+  divider: '#F5F5F5',
+  error: '#FF3B30',
+  success: '#34C759',
+  online: '#34C759',
 
-  // Avatar palette (deterministic colors by index)
+  // Avatar palette (Grayscale/Minimalist colors)
   avatarColors: [
-    '#6C63FF', '#FF6B9D', '#4ECDC4', '#FFE66D',
-    '#FF8E53', '#C471ED', '#12C2E9', '#F64F59',
+    '#000000', '#333333', '#555555', '#777777',
+    '#999999', '#AAAAAA', '#CCCCCC', '#DDDDDD',
   ],
 };
 
@@ -41,28 +41,36 @@ export const spacing = {
 };
 
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 18,
-  xl: 24,
+  sm: 4, // More squared, minimal edges
+  md: 8,
+  lg: 12,
+  xl: 16,
   full: 9999,
 };
 
 export const typography = {
-  h1: { fontSize: 28, fontWeight: '700', color: colors.textPrimary },
-  h2: { fontSize: 22, fontWeight: '700', color: colors.textPrimary },
-  h3: { fontSize: 18, fontWeight: '600', color: colors.textPrimary },
-  body: { fontSize: 15, fontWeight: '400', color: colors.textPrimary },
-  bodySmall: { fontSize: 13, fontWeight: '400', color: colors.textSecondary },
-  caption: { fontSize: 11, fontWeight: '400', color: colors.textMuted },
-  label: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
+  h1: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 32, color: colors.textPrimary },
+  h2: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 24, color: colors.textPrimary },
+  h3: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 20, color: colors.textPrimary },
+  body: { fontFamily: 'Inter_400Regular', fontSize: 15, color: colors.textPrimary },
+  bodySmall: { fontFamily: 'Inter_400Regular', fontSize: 13, color: colors.textSecondary },
+  caption: { fontFamily: 'Inter_400Regular', fontSize: 11, color: colors.textMuted },
+  label: { fontFamily: 'Inter_400Regular', fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
 };
 
 export const shadows = {
   card: {
-    elevation: 5,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   button: {
-    elevation: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
   },
 };

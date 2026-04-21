@@ -11,7 +11,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { colors, spacing, radius, typography, shadows } from '../../config/theme';
 
@@ -28,7 +28,17 @@ export default function LoginScreen({ navigation }) {
     }
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
+      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+      
+      if (!cred.user.emailVerified) {
+        await signOut(auth);
+        Alert.alert(
+          'Unverified Email',
+          'You must verify your email before logging in. Please check your inbox for the verification link.'
+        );
+        setLoading(false);
+        return;
+      }
     } catch (err) {
       let msg = 'Login failed. Please try again.';
       if (err.code === 'auth/user-not-found') msg = 'No account found with this email.';
@@ -142,35 +152,32 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
   },
   header: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: spacing.xxl,
   },
   logoWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: 'rgba(108,99,255,0.15)',
+    width: 64,
+    height: 64,
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(108,99,255,0.3)',
   },
-  logoIcon: { fontSize: 38 },
-  title: { ...typography.h1, marginBottom: spacing.xs },
-  subtitle: { ...typography.bodySmall, textAlign: 'center' },
+  logoIcon: { fontSize: 24, color: '#FFF' },
+  title: { ...typography.h1, marginBottom: spacing.xs, fontFamily: 'PlayfairDisplay_700Bold' },
+  subtitle: { ...typography.bodySmall, textAlign: 'left', fontFamily: 'Inter_400Regular' },
   form: { gap: spacing.md },
   fieldGroup: { gap: spacing.xs },
-  label: { ...typography.label },
+  label: { ...typography.label, fontFamily: 'Inter_600SemiBold' },
   input: {
-    backgroundColor: colors.bgInput,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
+    borderColor: '#000000',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md - 2,
-    color: colors.textPrimary,
+    color: '#000000',
     fontSize: 15,
+    fontFamily: 'Inter_400Regular',
   },
   passwordWrapper: { position: 'relative' },
   passwordInput: { paddingRight: 50 },
@@ -183,18 +190,16 @@ const styles = StyleSheet.create({
   },
   eyeIcon: { fontSize: 18 },
   primaryBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
+    backgroundColor: '#000000',
     paddingVertical: spacing.md,
     alignItems: 'center',
     marginTop: spacing.sm,
-    ...shadows.button,
   },
   primaryBtnDisabled: { opacity: 0.6 },
   primaryBtnText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Inter_600SemiBold',
     letterSpacing: 0.5,
   },
   footer: {
@@ -202,10 +207,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.xl,
   },
-  footerText: { ...typography.bodySmall },
+  footerText: { ...typography.bodySmall, fontFamily: 'Inter_400Regular' },
   footerLink: {
-    color: colors.primary,
+    color: '#000000',
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
+    textDecorationLine: 'underline',
   },
 });

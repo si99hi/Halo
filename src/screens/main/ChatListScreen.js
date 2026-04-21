@@ -122,6 +122,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   emptyIcon: { fontSize: 60, marginBottom: spacing.md },
-  emptyTitle: { ...typography.h2, textAlign: 'center' },
-  emptySubtitle: { ...typography.bodySmall, textAlign: 'center' },
+  emptyTitle: { ...typography.h2, textAlign: 'center', fontFamily: 'PlayfairDisplay_700Bold' },
+  emptySubtitle: { ...typography.bodySmall, textAlign: 'center', fontFamily: 'Inter_400Regular' },
 });
