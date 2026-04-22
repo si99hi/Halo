@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,30 @@ import {
   Alert,
 } from 'react-native';
 import { signOut } from 'firebase/auth';
-import { auth } from '../../config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../config/firebase';
 import Avatar from '../../components/Avatar';
 import { colors, spacing, radius, typography, shadows } from '../../config/theme';
 
 export default function ProfileScreen() {
   const user = auth.currentUser;
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user?.uid) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            setUsername(userDoc.data().username || '');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+    fetchUserData();
+  }, [user?.uid]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -57,9 +75,9 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.divider} />
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>User ID</Text>
-          <Text style={[styles.infoValue, styles.uid]} numberOfLines={1}>
-            {user?.uid}
+          <Text style={styles.infoLabel}>Username</Text>
+          <Text style={styles.infoValue} numberOfLines={1}>
+            {username ? `@${username}` : 'Loading...'}
           </Text>
         </View>
       </View>

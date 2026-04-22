@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { colors, spacing, radius, typography } from '../config/theme';
 import { formatMessageTime } from '../utils/chatUtils';
 
 export default function MessageBubble({ message, isOwn }) {
-  const { text, senderName, timestamp } = message;
+  const { text, senderName, timestamp, imageUrl } = message;
   const timeStr = formatMessageTime(timestamp);
 
   return (
@@ -12,10 +12,19 @@ export default function MessageBubble({ message, isOwn }) {
       {isOwn === false && !!senderName ? (
         <Text style={styles.senderName}>{senderName}</Text>
       ) : null}
-      <View style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}>
-        <Text style={[styles.text, isOwn ? styles.textOwn : styles.textOther]}>
-          {text}
-        </Text>
+      <View style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther, imageUrl ? styles.bubbleWithImage : null]}>
+        {imageUrl ? (
+          <Image 
+            source={{ uri: imageUrl }} 
+            style={styles.image} 
+            resizeMode="cover" 
+          />
+        ) : null}
+        {!!text && (
+          <Text style={[styles.text, isOwn ? styles.textOwn : styles.textOther]}>
+            {text}
+          </Text>
+        )}
         <Text style={[styles.time, isOwn ? styles.timeOwn : styles.timeOther]}>
           {timeStr}
         </Text>
@@ -80,5 +89,16 @@ const styles = StyleSheet.create({
   },
   timeOther: {
     color: colors.textMuted,
+  },
+  bubbleWithImage: {
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  image: {
+    width: 220,
+    height: 220,
+    borderRadius: 0,
+    marginBottom: spacing.xs,
+    backgroundColor: '#EAEAEA',
   },
 });

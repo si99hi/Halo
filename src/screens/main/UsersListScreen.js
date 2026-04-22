@@ -19,12 +19,30 @@ export default function UsersListScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const currentUser = auth.currentUser;
 
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
+
+  const fetchAllUsers = async () => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'users'));
+      const snapshot = await getDocs(q);
+      const all = snapshot.docs.map((d) => d.data());
+      setUsers(all);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearch = async (text) => {
     setSearchQuery(text);
     const search = text.trim().toLowerCase();
     
     if (!search) {
-      setUsers([]);
+      fetchAllUsers();
       return;
     }
     
@@ -36,9 +54,7 @@ export default function UsersListScreen({ navigation }) {
         where('username', '<=', search + '\uf8ff')
       );
       const snapshot = await getDocs(q);
-      const all = snapshot.docs
-        .map((d) => d.data())
-        .filter((u) => u.uid !== currentUser.uid);
+      const all = snapshot.docs.map((d) => d.data());
       setUsers(all);
     } catch (err) {
       console.error('Failed to search users:', err);
@@ -74,20 +90,14 @@ export default function UsersListScreen({ navigation }) {
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#000000" />
         </View>
-      ) : searchQuery.trim() === '' ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyIcon}>🔍</Text>
-          <Text style={styles.emptyTitle}>Find a User</Text>
-          <Text style={styles.emptySubtitle}>
-            Search by their exact Snapchat-style username.
-          </Text>
-        </View>
       ) : users.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>👥</Text>
-          <Text style={styles.emptyTitle}>No other users yet</Text>
+          <Text style={styles.emptyTitle}>No users found</Text>
           <Text style={styles.emptySubtitle}>
-            Register another account to start chatting.
+            {searchQuery.trim() === '' 
+              ? "Register another account to start chatting." 
+              : "No user matches this username."}
           </Text>
         </View>
       ) : (

@@ -11,7 +11,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { colors, spacing, radius, typography, shadows } from '../../config/theme';
 
@@ -31,10 +31,24 @@ export default function LoginScreen({ navigation }) {
       const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
       
       if (!cred.user.emailVerified) {
-        await signOut(auth);
         Alert.alert(
           'Unverified Email',
-          'You must verify your email before logging in. Please check your inbox for the verification link.'
+          'You must verify your email before logging in. Please check your inbox and spam folders for the verification link.',
+          [
+            { text: 'Cancel', onPress: () => signOut(auth), style: 'cancel' },
+            {
+              text: 'Resend Email',
+              onPress: async () => {
+                try {
+                  await sendEmailVerification(cred.user);
+                  Alert.alert('Success', 'Verification email resent. Please check your inbox and spam folders.');
+                } catch (e) {
+                  Alert.alert('Error', 'Could not resend email. Please try again later.');
+                }
+                await signOut(auth);
+              },
+            },
+          ]
         );
         setLoading(false);
         return;

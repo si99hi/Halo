@@ -82,7 +82,7 @@ export default function RegisterScreen({ navigation }) {
       
       Alert.alert(
         'Account Created',
-        'We sent a verification link to your email. Please verify your account before logging in.'
+        'We sent a verification link to your email. Please check your inbox and spam folders. You must verify your account before logging in.'
       );
     } catch (err) {
       let msg = 'Registration failed. Please try again.';
