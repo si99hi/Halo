@@ -1,9 +1,22 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { colors } from '../config/theme';
 import { getInitials, getAvatarColorIndex } from '../utils/chatUtils';
 
-export default function Avatar({ name = '', size = 44, style }) {
+export default function Avatar({ name = '', size = 44, imageUrl, style }) {
+  if (imageUrl) {
+    return (
+      <Image
+        source={{ uri: imageUrl }}
+        style={[
+          styles.container,
+          { width: size, height: size, borderRadius: size / 2 },
+          style,
+        ]}
+      />
+    );
+  }
+
   const initials = getInitials(name);
   const colorIdx = getAvatarColorIndex(name);
   const bg = colors.avatarColors[colorIdx];

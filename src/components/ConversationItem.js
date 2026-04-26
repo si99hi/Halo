@@ -17,7 +17,7 @@ export default function ConversationItem({ conversation, currentUserId, onPress 
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Avatar name={name} size={52} />
+      <Avatar name={name} size={52} imageUrl={otherUser?.photoURL} />
       <View style={styles.content}>
         <View style={styles.row}>
           <Text style={styles.name} numberOfLines={1}>{name}</Text>

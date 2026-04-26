@@ -4,7 +4,7 @@ import Avatar from './Avatar';
 import { colors, spacing, typography, radius } from '../config/theme';
 
 export default function UserItem({ user, onPress }) {
-  const { displayName, email, username } = user;
+  const { displayName, email, username, photoURL } = user;
   const displayHandle = username ? `@${username}` : email;
 
   return (
@@ -13,7 +13,7 @@ export default function UserItem({ user, onPress }) {
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Avatar name={displayName} size={50} />
+      <Avatar name={displayName} size={50} imageUrl={photoURL} />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>{displayName}</Text>
         <Text style={styles.username} numberOfLines={1}>{displayHandle}</Text>

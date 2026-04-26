@@ -53,6 +53,7 @@ function ChatsNavigator() {
                 <Avatar
                   name={name}
                   size={34}
+                  imageUrl={u?.photoURL}
                 />
               </View>
             ),
@@ -86,6 +87,7 @@ function UsersNavigator() {
                 <Avatar
                   name={name}
                   size={34}
+                  imageUrl={u?.photoURL}
                 />
               </View>
             ),
