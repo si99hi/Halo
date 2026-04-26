@@ -11,6 +11,7 @@ import ProfileScreen from '../screens/main/ProfileScreen';
 import FeedScreen from '../screens/main/hyperlocal/FeedScreen';
 import CreatePostScreen from '../screens/main/hyperlocal/CreatePostScreen';
 import PostDetailScreen from '../screens/main/hyperlocal/PostDetailScreen';
+import NewsScreen from '../screens/main/news/NewsScreen';
 import Avatar from '../components/Avatar';
 import { colors, spacing, radius } from '../config/theme';
 import { auth } from '../config/firebase';
@@ -19,6 +20,7 @@ const Tab = createBottomTabNavigator();
 const ChatsStack = createStackNavigator();
 const UsersStack = createStackNavigator();
 const HyperlocalStack = createStackNavigator();
+const NewsStack = createStackNavigator();
 
 const headerStyle = {
   backgroundColor: '#FFFFFF',
@@ -125,6 +127,19 @@ function HyperlocalNavigator() {
   );
 }
 
+// News Stack
+function NewsNavigator() {
+  return (
+    <NewsStack.Navigator screenOptions={{ headerStyle, headerTitleStyle }}>
+      <NewsStack.Screen
+        name="NewsFeed"
+        component={NewsScreen}
+        options={{ headerShown: false }}
+      />
+    </NewsStack.Navigator>
+  );
+}
+
 export default function MainStack() {
   const user = auth.currentUser;
 
@@ -144,6 +159,8 @@ export default function MainStack() {
             iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'HyperlocalTab') {
             iconName = focused ? 'location' : 'location-outline';
+          } else if (route.name === 'NewsTab') {
+            iconName = focused ? 'newspaper' : 'newspaper-outline';
           } else if (route.name === 'ProfileTab') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -156,6 +173,16 @@ export default function MainStack() {
       })}
     >
       <Tab.Screen
+        name="NewsTab"
+        component={NewsNavigator}
+        options={{ tabBarLabel: 'News' }}
+      />
+      <Tab.Screen
+        name="HyperlocalTab"
+        component={HyperlocalNavigator}
+        options={{ tabBarLabel: 'City' }}
+      />
+      <Tab.Screen
         name="ChatsTab"
         component={ChatsNavigator}
         options={{ tabBarLabel: 'Chats' }}
@@ -164,11 +191,6 @@ export default function MainStack() {
         name="UsersTab"
         component={UsersNavigator}
         options={{ tabBarLabel: 'People' }}
-      />
-      <Tab.Screen
-        name="HyperlocalTab"
-        component={HyperlocalNavigator}
-        options={{ tabBarLabel: 'City' }}
       />
       <Tab.Screen
         name="ProfileTab"
