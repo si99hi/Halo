@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { CITIES, City } from '../../types/hyperlocal';
 import { colors, spacing, radius } from '../../config/theme';
 
@@ -11,6 +13,69 @@ interface CitySelectorProps {
 
 export default function CitySelector({ selectedCity, onSelectCity }: CitySelectorProps) {
   const [modalVisible, setModalVisible] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleDetectLocation = async () => {
+    try {
+      setIsLocating(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required to automatically detect your city.');
+        setIsLocating(false);
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const geocode = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      if (geocode && geocode.length > 0) {
+        const detectedCity = geocode[0].city || geocode[0].subregion;
+        
+        if (!detectedCity) {
+          Alert.alert('Detection Failed', 'Could not determine your city name from your coordinates.');
+          setIsLocating(false);
+          return;
+        }
+
+        // Normalize string for matching
+        const normalizedDetect = detectedCity.toLowerCase().replace(/\s+/g, '');
+        let matchedCity: City | undefined;
+
+        for (const c of CITIES) {
+          const normalizedTarget = c.toLowerCase().replace(/\s+/g, '');
+          if (
+            normalizedTarget === normalizedDetect ||
+            (normalizedTarget === 'delhi' && normalizedDetect.includes('delhi')) ||
+            (normalizedTarget === 'bangalore' && normalizedDetect === 'bengaluru') ||
+            (normalizedTarget === 'mumbai' && normalizedDetect === 'bombay')
+          ) {
+            matchedCity = c;
+            break;
+          }
+        }
+
+        if (matchedCity) {
+          onSelectCity(matchedCity);
+          setModalVisible(false);
+        } else {
+          Alert.alert(
+            'City Not Available',
+            `We detected you are in ${detectedCity}, but we currently only support our 8 primary cities. Please select a city manually from the list.`
+          );
+        }
+      } else {
+        Alert.alert('Detection Failed', 'Could not retrieve your location details.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'An unexpected error occurred while detecting your location.');
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -39,33 +104,50 @@ export default function CitySelector({ selectedCity, onSelectCity }: CitySelecto
             </TouchableOpacity>
           </View>
           
-          <FlatList
-            data={CITIES}
-            keyExtractor={(item) => item}
-            contentContainerStyle={styles.listContainer}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.cityItem,
-                  selectedCity === item && styles.cityItemSelected
-                ]}
-                onPress={() => {
-                  onSelectCity(item);
-                  setModalVisible(false);
-                }}
-              >
-                <Text style={[
-                  styles.cityItemText,
-                  selectedCity === item && styles.cityItemTextSelected
-                ]}>
-                  {item}
-                </Text>
-                {selectedCity === item && (
-                  <Ionicons name="checkmark" size={20} color={colors.primary} />
-                )}
-              </TouchableOpacity>
-            )}
-          />
+          <View style={styles.listContainer}>
+            <TouchableOpacity 
+              style={styles.detectLocationButton} 
+              onPress={handleDetectLocation}
+              disabled={isLocating}
+            >
+              {isLocating ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <Ionicons name="navigate-circle" size={22} color="#fff" />
+                  <Text style={styles.detectLocationText}>Detect Current Location</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <FlatList
+              data={CITIES}
+              keyExtractor={(item) => item}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.cityItem,
+                    selectedCity === item && styles.cityItemSelected
+                  ]}
+                  onPress={() => {
+                    onSelectCity(item);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.cityItemText,
+                    selectedCity === item && styles.cityItemTextSelected
+                  ]}>
+                    {item}
+                  </Text>
+                  {selectedCity === item && (
+                    <Ionicons name="checkmark" size={20} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
         </SafeAreaView>
       </Modal>
     </View>
@@ -114,6 +196,27 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: spacing.md,
+    flex: 1,
+  },
+  detectLocationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  detectLocationText: {
+    color: '#fff',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 16,
   },
   cityItem: {
     flexDirection: 'row',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Text, SafeAreaView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, Text, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -29,11 +30,8 @@ export default function FeedScreen({ navigation }: any) {
         const savedCity = await getUserCity(currentUser.uid);
         if (savedCity) {
           setCity(savedCity);
-        } else {
-          // Default to first city if none selected
-          setCity('Delhi');
-          await saveUserCity(currentUser.uid, 'Delhi');
         }
+        // We no longer forcefully default to Delhi. The user must explicitly select a city from the dropdown.
       }
     };
     loadInitialCity();
@@ -159,8 +157,17 @@ export default function FeedScreen({ navigation }: any) {
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No posts found in {city}</Text>
-              <Text style={styles.emptySubtext}>Be the first to create one!</Text>
+              {!city ? (
+                <>
+                  <Text style={styles.emptyText}>Welcome to Your City</Text>
+                  <Text style={styles.emptySubtext}>Please tap "Select Your City" above to see posts near you.</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.emptyText}>No posts found in {city}</Text>
+                  <Text style={styles.emptySubtext}>Be the first to create one!</Text>
+                </>
+              )}
             </View>
           }
           ListFooterComponent={
@@ -169,12 +176,14 @@ export default function FeedScreen({ navigation }: any) {
         />
       )}
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => navigation.navigate('CreatePost', { city })}
-      >
-        <Ionicons name="add" size={24} color="#fff" />
-      </TouchableOpacity>
+      {city && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => navigation.navigate('CreatePost', { city })}
+        >
+          <Ionicons name="add" size={24} color="#fff" />
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
@@ -187,6 +196,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#fff',
     zIndex: 10,
+    elevation: 10, // Required for Android to draw dropdown above sibling views
   },
   sortContainer: {
     flexDirection: 'row',
