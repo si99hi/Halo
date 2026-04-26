@@ -42,9 +42,28 @@ export default function ChatListScreen({ navigation }) {
 
           let otherUser = null;
           try {
-            const userSnap = await getDoc(doc(db, 'users', otherUid));
-            if (userSnap.exists()) otherUser = userSnap.data();
-          } catch (_) {}
+            if (!otherUid) {
+              // Chatting with yourself
+              otherUser = {
+                uid: currentUser.uid,
+                displayName: currentUser.displayName || 'Me',
+                username: currentUser.email?.split('@')[0] || 'me' // fallback if we don't fetch full doc
+              };
+              // optionally fetch current user doc to get actual username
+              const selfSnap = await getDoc(doc(db, 'users', currentUser.uid));
+              if (selfSnap.exists()) otherUser = selfSnap.data();
+            } else {
+              const userSnap = await getDoc(doc(db, 'users', otherUid));
+              if (userSnap.exists()) {
+                otherUser = userSnap.data();
+              } else {
+                otherUser = { uid: otherUid, displayName: 'Unknown User' };
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching other user:", error);
+            otherUser = { uid: otherUid || 'unknown', displayName: 'Unknown User' };
+          }
 
           return {
             id: docSnap.id,

@@ -121,7 +121,7 @@ export default function ChatRoomScreen({ route }) {
         <View style={styles.emptyWrapper}>
           <Text style={styles.emptyIcon}>👋</Text>
           <Text style={styles.emptyText}>
-            Say hi to {otherUser?.displayName || 'them'}!
+            Say hi to {otherUser?.username ? `@${otherUser.username}` : (otherUser?.displayName || 'them')}!
           </Text>
         </View>
       ) : (

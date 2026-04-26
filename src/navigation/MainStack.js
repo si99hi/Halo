@@ -42,18 +42,22 @@ function ChatsNavigator() {
       <ChatsStack.Screen
         name="ChatRoom"
         component={ChatRoomScreen}
-        options={({ route }) => ({
-          title: route.params?.otherUser?.displayName || 'Chat',
-          headerTintColor: colors.primary,
-          headerRight: () => (
-            <View style={{ marginRight: spacing.md }}>
-              <Avatar
-                name={route.params?.otherUser?.displayName || '?'}
-                size={34}
-              />
-            </View>
-          ),
-        })}
+        options={({ route }) => {
+          const u = route.params?.otherUser;
+          const name = u?.username ? `@${u.username}` : (u?.displayName || 'Chat');
+          return {
+            title: name,
+            headerTintColor: colors.primary,
+            headerRight: () => (
+              <View style={{ marginRight: spacing.md }}>
+                <Avatar
+                  name={name}
+                  size={34}
+                />
+              </View>
+            ),
+          };
+        }}
       />
     </ChatsStack.Navigator>
   );
@@ -71,18 +75,22 @@ function UsersNavigator() {
       <UsersStack.Screen
         name="ChatRoom"
         component={ChatRoomScreen}
-        options={({ route }) => ({
-          title: route.params?.otherUser?.displayName || 'Chat',
-          headerTintColor: colors.primary,
-          headerRight: () => (
-            <View style={{ marginRight: spacing.md }}>
-              <Avatar
-                name={route.params?.otherUser?.displayName || '?'}
-                size={34}
-              />
-            </View>
-          ),
-        })}
+        options={({ route }) => {
+          const u = route.params?.otherUser;
+          const name = u?.username ? `@${u.username}` : (u?.displayName || 'Chat');
+          return {
+            title: name,
+            headerTintColor: colors.primary,
+            headerRight: () => (
+              <View style={{ marginRight: spacing.md }}>
+                <Avatar
+                  name={name}
+                  size={34}
+                />
+              </View>
+            ),
+          };
+        }}
       />
     </UsersStack.Navigator>
   );

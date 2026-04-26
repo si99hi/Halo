@@ -6,7 +6,7 @@ import { formatTimestamp } from '../utils/chatUtils';
 
 export default function ConversationItem({ conversation, currentUserId, onPress }) {
   const { otherUser, lastMessage, updatedAt } = conversation;
-  const name = otherUser?.displayName || 'Unknown';
+  const name = otherUser?.username ? `@${otherUser.username}` : (otherUser?.displayName || 'Unknown');
   const preview = lastMessage?.text || 'No messages yet';
   const time = formatTimestamp(updatedAt);
   const isOwn = lastMessage?.senderId === currentUserId;
