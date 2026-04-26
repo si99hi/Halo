@@ -39,7 +39,7 @@ export default function InputBar({ onSend, disabled }) {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      quality: 0.8,
+      quality: 0.2, // Low quality for small base64 size
       base64: true,
     });
 

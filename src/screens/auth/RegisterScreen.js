@@ -62,6 +62,8 @@ export default function RegisterScreen({ navigation }) {
         setLoading(false);
         return;
       }
+
+      // Create the auth user
       const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
 
       // Update Firebase Auth profile
@@ -89,7 +91,8 @@ export default function RegisterScreen({ navigation }) {
       if (err.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
       else if (err.code === 'auth/invalid-email') msg = 'Invalid email address.';
       else if (err.code === 'auth/weak-password') msg = 'Password is too weak.';
-      Alert.alert('Registration Error', msg);
+      console.error("Registration Error:", err);
+      Alert.alert('Registration Error', msg + ' (' + err.message + ')');
     } finally {
       setLoading(false);
     }

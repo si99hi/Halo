@@ -8,6 +8,9 @@ import ChatListScreen from '../screens/main/ChatListScreen';
 import UsersListScreen from '../screens/main/UsersListScreen';
 import ChatRoomScreen from '../screens/main/ChatRoomScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
+import FeedScreen from '../screens/main/hyperlocal/FeedScreen';
+import CreatePostScreen from '../screens/main/hyperlocal/CreatePostScreen';
+import PostDetailScreen from '../screens/main/hyperlocal/PostDetailScreen';
 import Avatar from '../components/Avatar';
 import { colors, spacing, radius } from '../config/theme';
 import { auth } from '../config/firebase';
@@ -15,6 +18,7 @@ import { auth } from '../config/firebase';
 const Tab = createBottomTabNavigator();
 const ChatsStack = createStackNavigator();
 const UsersStack = createStackNavigator();
+const HyperlocalStack = createStackNavigator();
 
 const headerStyle = {
   backgroundColor: '#FFFFFF',
@@ -98,6 +102,29 @@ function UsersNavigator() {
   );
 }
 
+// Hyperlocal Stack
+function HyperlocalNavigator() {
+  return (
+    <HyperlocalStack.Navigator screenOptions={{ headerStyle, headerTitleStyle }}>
+      <HyperlocalStack.Screen
+        name="Feed"
+        component={FeedScreen}
+        options={{ headerShown: false }}
+      />
+      <HyperlocalStack.Screen
+        name="CreatePost"
+        component={CreatePostScreen}
+        options={{ title: 'Create Post' }}
+      />
+      <HyperlocalStack.Screen
+        name="PostDetail"
+        component={PostDetailScreen}
+        options={{ title: 'Post' }}
+      />
+    </HyperlocalStack.Navigator>
+  );
+}
+
 export default function MainStack() {
   const user = auth.currentUser;
 
@@ -115,6 +142,8 @@ export default function MainStack() {
             iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'UsersTab') {
             iconName = focused ? 'people' : 'people-outline';
+          } else if (route.name === 'HyperlocalTab') {
+            iconName = focused ? 'location' : 'location-outline';
           } else if (route.name === 'ProfileTab') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -135,6 +164,11 @@ export default function MainStack() {
         name="UsersTab"
         component={UsersNavigator}
         options={{ tabBarLabel: 'People' }}
+      />
+      <Tab.Screen
+        name="HyperlocalTab"
+        component={HyperlocalNavigator}
+        options={{ tabBarLabel: 'City' }}
       />
       <Tab.Screen
         name="ProfileTab"

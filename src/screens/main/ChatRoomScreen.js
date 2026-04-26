@@ -18,7 +18,7 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref } from 'firebase/storage';
 import { auth, db, storage } from '../../config/firebase';
 import MessageBubble from '../../components/MessageBubble';
 import InputBar from '../../components/InputBar';
@@ -48,37 +48,15 @@ export default function ChatRoomScreen({ route }) {
     return unsubscribe;
   }, [chatId]);
 
-  const uploadImageToFirebase = async (base64) => {
-    try {
-      const filename = `image_${Date.now()}.jpg`;
-      const storageRef = ref(storage, `chats/${chatId}/${filename}`);
-      
-      await uploadString(storageRef, base64, 'base64', {
-        contentType: 'image/jpeg',
-      });
-
-      const downloadURL = await getDownloadURL(storageRef);
-      return downloadURL;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw error;
-    }
-  };
+  // uploadImageToFirebase removed as we are bypassing storage
 
   const handleSend = async (text, imageBase64 = null) => {
     if (!text.trim() && !imageBase64) return;
 
     let imageUrl = null;
     if (imageBase64) {
-      setIsUploading(true);
-      try {
-        imageUrl = await uploadImageToFirebase(imageBase64);
-      } catch (err) {
-        setIsUploading(false);
-        alert('Failed to upload photo. Please try again.');
-        return;
-      }
-      setIsUploading(false);
+      // Bypass Firebase storage and save directly as base64 string
+      imageUrl = `data:image/jpeg;base64,${imageBase64}`;
     }
 
     const messageData = {
