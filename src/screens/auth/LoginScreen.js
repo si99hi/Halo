@@ -112,7 +112,7 @@ export default function LoginScreen({ navigation }) {
               style={styles.eyeBtn}
               onPress={() => setShowPass(showPass === false)}
             >
-              <Text style={styles.eyeIcon}>{showPass ? '🙈' : '👁️'}</Text>
+              <Text style={styles.eyeIcon}>{showPass ? '⌣' : '👁'}</Text>
             </TouchableOpacity>
           </View>
         </View>

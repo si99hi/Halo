@@ -6,6 +6,29 @@ import * as Location from 'expo-location';
 import { CITIES, City } from '../../types/hyperlocal';
 import { colors, spacing, radius } from '../../config/theme';
 
+const CITY_COORDINATES: Record<City, { lat: number; lon: number }> = {
+  Delhi: { lat: 28.7041, lon: 77.1025 },
+  Mumbai: { lat: 19.0760, lon: 72.8777 },
+  Bangalore: { lat: 12.9716, lon: 77.5946 },
+  Chennai: { lat: 13.0827, lon: 80.2707 },
+  Kolkata: { lat: 22.5726, lon: 88.3639 },
+  Hyderabad: { lat: 17.3850, lon: 78.4867 },
+  Pune: { lat: 18.5204, lon: 73.8567 },
+  Ahmedabad: { lat: 23.0225, lon: 72.5714 },
+};
+
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
+
 interface CitySelectorProps {
   selectedCity: City | null;
   onSelectCity: (city: City) => void;
@@ -33,27 +56,23 @@ export default function CitySelector({ selectedCity, onSelectCity }: CitySelecto
 
       if (geocode && geocode.length > 0) {
         const detectedCity = geocode[0].city || geocode[0].subregion;
-        
-        if (!detectedCity) {
-          Alert.alert('Detection Failed', 'Could not determine your city name from your coordinates.');
-          setIsLocating(false);
-          return;
-        }
-
-        // Normalize string for matching
-        const normalizedDetect = detectedCity.toLowerCase().replace(/\s+/g, '');
         let matchedCity: City | undefined;
 
-        for (const c of CITIES) {
-          const normalizedTarget = c.toLowerCase().replace(/\s+/g, '');
-          if (
-            normalizedTarget === normalizedDetect ||
-            (normalizedTarget === 'delhi' && normalizedDetect.includes('delhi')) ||
-            (normalizedTarget === 'bangalore' && normalizedDetect === 'bengaluru') ||
-            (normalizedTarget === 'mumbai' && normalizedDetect === 'bombay')
-          ) {
-            matchedCity = c;
-            break;
+        if (detectedCity) {
+          // Normalize string for matching
+          const normalizedDetect = detectedCity.toLowerCase().replace(/\s+/g, '');
+
+          for (const c of CITIES) {
+            const normalizedTarget = c.toLowerCase().replace(/\s+/g, '');
+            if (
+              normalizedTarget === normalizedDetect ||
+              (normalizedTarget === 'delhi' && normalizedDetect.includes('delhi')) ||
+              (normalizedTarget === 'bangalore' && normalizedDetect === 'bengaluru') ||
+              (normalizedTarget === 'mumbai' && normalizedDetect === 'bombay')
+            ) {
+              matchedCity = c;
+              break;
+            }
           }
         }
 
@@ -61,10 +80,36 @@ export default function CitySelector({ selectedCity, onSelectCity }: CitySelecto
           onSelectCity(matchedCity);
           setModalVisible(false);
         } else {
-          Alert.alert(
-            'City Not Available',
-            `We detected you are in ${detectedCity}, but we currently only support our 8 primary cities. Please select a city manually from the list.`
-          );
+          // Find nearest city based on distance
+          let nearestCity: City | null = null;
+          let minDistance = Infinity;
+
+          for (const city of CITIES) {
+            const coords = CITY_COORDINATES[city];
+            if (coords) {
+              const dist = getDistance(
+                location.coords.latitude,
+                location.coords.longitude,
+                coords.lat,
+                coords.lon
+              );
+              if (dist < minDistance) {
+                minDistance = dist;
+                nearestCity = city;
+              }
+            }
+          }
+
+          if (nearestCity) {
+            Alert.alert(
+              'Location Detected',
+              `We detected you are near ${detectedCity || 'an unknown area'}, showing you news for ${nearestCity}.`
+            );
+            onSelectCity(nearestCity);
+            setModalVisible(false);
+          } else {
+             Alert.alert('Detection Failed', 'Could not determine your nearest city.');
+          }
         }
       } else {
         Alert.alert('Detection Failed', 'Could not retrieve your location details.');
