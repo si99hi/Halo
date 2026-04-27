@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, StyleSheet } from 'react-native';
@@ -16,7 +16,7 @@ import Avatar from '../components/Avatar';
 import { colors, spacing, radius } from '../config/theme';
 import { auth } from '../config/firebase';
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 const ChatsStack = createStackNavigator();
 const UsersStack = createStackNavigator();
 const HyperlocalStack = createStackNavigator();
@@ -141,17 +141,23 @@ function NewsNavigator() {
 }
 
 export default function MainStack() {
-  const user = auth.currentUser;
-
   return (
     <Tab.Navigator
+      tabBarPosition="bottom"
+      initialRouteName="HyperlocalTab"
       screenOptions={({ route }) => ({
-        headerShown: false,
+        swipeEnabled: true,
+        tabBarShowIcon: true,
+        tabBarIndicatorStyle: {
+          height: 3,
+          backgroundColor: colors.primary,
+          top: 0, // indicator on top of the tab for bottom tabs
+        },
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: styles.tabLabel,
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused, color }) => {
           let iconName;
           if (route.name === 'ChatsTab') {
             iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
@@ -197,10 +203,6 @@ export default function MainStack() {
         component={ProfileScreen}
         options={{
           tabBarLabel: 'Profile',
-          headerShown: true,
-          title: 'My Profile',
-          headerStyle,
-          headerTitleStyle,
         }}
       />
     </Tab.Navigator>
@@ -212,15 +214,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopColor: '#000000',
     borderTopWidth: StyleSheet.hairlineWidth,
-    height: 62,
-    paddingBottom: 8,
-    paddingTop: 6,
+    height: 65,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   tabLabel: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
+    fontSize: 10,
+    textTransform: 'none',
+    marginTop: 0,
   },
   activeIconWrapper: {
-    padding: 4,
+    padding: 0,
   },
 });

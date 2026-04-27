@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { auth } from '../../../config/firebase';
@@ -19,12 +19,14 @@ export default function NewsScreen() {
   const [city, setCity] = useState<City | null>(null);
   const currentUser = auth.currentUser;
   const insets = useSafeAreaInsets();
+  const flatListRef = useRef<FlatList>(null);
+  const navigation = useNavigation();
   
   // Calculate exact height for one item to fill the screen between headers and tabs
   const { height } = Dimensions.get('window');
   // Approximate heights: TabBar = 62, CitySelector = 50 + paddings = ~60
   const headerHeight = 60;
-  const tabBarHeight = 62;
+  const tabBarHeight = 65; // Updated to match MainStack tab height
   const itemHeight = height - headerHeight - tabBarHeight - insets.bottom - insets.top;
 
   // Load user's preferred city on mount
@@ -39,6 +41,16 @@ export default function NewsScreen() {
     };
     loadInitialCity();
   }, [currentUser]);
+
+  // Scroll to top on tab press
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress', (e) => {
+      if (navigation.isFocused() && flatListRef.current) {
+        flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const handleCityChange = async (newCity: City) => {
     setCity(newCity);
@@ -115,6 +127,7 @@ export default function NewsScreen() {
       </View>
 
       <FlatList
+        ref={flatListRef}
         data={articles}
         keyExtractor={(item, index) => `${item.url}-${index}`}
         renderItem={({ item }) => <View style={{ height: itemHeight }}><NewsCard article={item} isFullScreen={true} /></View>}
