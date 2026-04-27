@@ -97,12 +97,34 @@ export default function FeedScreen({ navigation }: any) {
     }));
 
     try {
-      await togglePostUpvote(postId, currentUser.uid, isUpvote);
+      const newUpvotes = await togglePostUpvote(postId, currentUser.uid, isUpvote);
+      setPosts(prev => prev.map(p => {
+        if (p.id === postId) {
+          return { ...p, upvotes: newUpvotes };
+        }
+        return p;
+      }));
     } catch (error) {
       console.error('Error voting:', error);
       // Revert on failure (simplified)
       handleRefresh();
     }
+  };
+
+  const handleAuthorPress = (authorId: string, authorUsername: string, authorPhotoUrl?: string) => {
+    if (authorId === currentUser?.uid) return;
+    
+    navigation.navigate('ChatsTab', {
+      screen: 'ChatRoom',
+      params: {
+        otherUser: {
+          uid: authorId,
+          username: authorUsername,
+          photoURL: authorPhotoUrl,
+          displayName: authorUsername,
+        }
+      }
+    });
   };
 
   const renderSortHeader = () => (
@@ -144,6 +166,7 @@ export default function FeedScreen({ navigation }: any) {
               onPress={() => navigation.navigate('PostDetail', { postId: item.id })}
               onUpvote={() => handleUpvote(item.id!, true)}
               onDownvote={() => handleUpvote(item.id!, false)}
+              onAuthorPress={handleAuthorPress}
             />
           )}
           refreshControl={

@@ -18,7 +18,7 @@ export const colors = {
   textOnPrimary: '#FFFFFF',
 
   // UI
-  border: '#EEEEEE',
+  border: '#1976D2', // blue for outlines
   divider: '#F5F5F5',
   error: '#FF3B30',
   success: '#34C759',

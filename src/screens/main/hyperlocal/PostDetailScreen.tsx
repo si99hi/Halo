@@ -6,6 +6,7 @@ import { auth } from '../../../config/firebase';
 import { colors, spacing } from '../../../config/theme';
 import { HyperlocalPost, HyperlocalReply } from '../../../types/hyperlocal';
 import { getPostById, getRepliesForPost, addReply, toggleReplyUpvote, togglePostUpvote } from '../../../services/hyperlocalService';
+import { getOrCreateChat } from '../../../utils/chatUtils';
 
 import PostCard from '../../../components/hyperlocal/PostCard';
 import ReplyThread from '../../../components/hyperlocal/ReplyThread';
@@ -50,21 +51,24 @@ export default function PostDetailScreen({ route, navigation }: any) {
     if (!currentUser || !post) return;
     setPost({ ...post, upvotes: post.upvotes + (isUpvote ? 1 : -1) });
     try {
-      await togglePostUpvote(postId, currentUser.uid, isUpvote);
+      const newUpvotes = await togglePostUpvote(postId, currentUser.uid, isUpvote);
+      setPost(prev => prev ? { ...prev, upvotes: newUpvotes } : null);
     } catch (error) {
+      console.error('Error voting post:', error);
       fetchData(); // revert
     }
   };
 
-  const handleReplyUpvote = async (replyId: string) => {
+  const handleReplyVote = async (replyId: string, isUpvote: boolean) => {
     if (!currentUser) return;
     
     // Optimistic
-    setReplies(prev => prev.map(r => r.id === replyId ? { ...r, upvotes: r.upvotes + 1 } : r));
+    setReplies(prev => prev.map(r => r.id === replyId ? { ...r, upvotes: r.upvotes + (isUpvote ? 1 : -1) } : r));
     try {
-      // Assuming toggleReplyUpvote defaults to +1 for simplicity based on our implementation
-      await toggleReplyUpvote(replyId, currentUser.uid, true);
+      const newUpvotes = await toggleReplyUpvote(replyId, currentUser.uid, isUpvote);
+      setReplies(prev => prev.map(r => r.id === replyId ? { ...r, upvotes: newUpvotes } : r));
     } catch (error) {
+      console.error('Error voting reply:', error);
       fetchData(); // revert
     }
   };
@@ -80,6 +84,29 @@ export default function PostDetailScreen({ route, navigation }: any) {
   const handleCancelReply = () => {
     setReplyParentId(null);
     setReplyParentUsername(null);
+  };
+
+  const handleAuthorPress = async (authorId: string, authorUsername: string, authorPhotoUrl?: string) => {
+    if (authorId === currentUser?.uid) return;
+    
+    try {
+      const chatId = await getOrCreateChat(currentUser.uid, authorId);
+      navigation.navigate('ChatsTab', {
+        screen: 'ChatRoom',
+        params: {
+          chatId,
+          otherUser: {
+            uid: authorId,
+            username: authorUsername,
+            photoURL: authorPhotoUrl,
+            displayName: authorUsername,
+          }
+        }
+      });
+    } catch (err) {
+      console.error('Failed to open chat:', err);
+      Alert.alert('Error', 'Could not open chat.');
+    }
   };
 
   const handleSubmitReply = async (content: string) => {
@@ -143,6 +170,7 @@ export default function PostDetailScreen({ route, navigation }: any) {
               onPress={() => {}} // Disabled in detail view
               onUpvote={() => handlePostUpvote(true)}
               onDownvote={() => handlePostUpvote(false)}
+              onAuthorPress={handleAuthorPress}
             />
             <View style={styles.divider} />
           </>
@@ -152,7 +180,9 @@ export default function PostDetailScreen({ route, navigation }: any) {
             reply={item}
             allReplies={replies}
             onReply={handleInitiateReply}
-            onUpvote={handleReplyUpvote}
+            onUpvote={(replyId) => handleReplyVote(replyId, true)}
+            onDownvote={(replyId) => handleReplyVote(replyId, false)}
+            onAuthorPress={handleAuthorPress}
           />
         )}
         contentContainerStyle={styles.listContent}

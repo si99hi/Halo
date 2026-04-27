@@ -93,21 +93,37 @@ export const getPostById = async (postId: string): Promise<HyperlocalPost | null
 }
 
 // Upvote or Downvote a Post
-export const togglePostUpvote = async (postId: string, userId: string, isUpvote: boolean) => {
+export const togglePostUpvote = async (postId: string, userId: string, isUpvote: boolean): Promise<number> => {
   const postRef = doc(db, POSTS_COLLECTION, postId);
   const userVoteRef = doc(db, `${POSTS_COLLECTION}/${postId}/votes`, userId);
   
-  await runTransaction(db, async (transaction) => {
+  return await runTransaction(db, async (transaction) => {
+    const postDoc = await transaction.get(postRef);
+    if (!postDoc.exists()) throw new Error("Post not found");
+    
+    let currentUpvotes = postDoc.data().upvotes || 0;
     const voteDoc = await transaction.get(userVoteRef);
+    const desiredVote = isUpvote ? 1 : -1;
+
     if (voteDoc.exists()) {
-       // Already voted, maybe remove vote or change direction
-       // For simplicity, let's just do a basic toggle if we only allow +1 / 0
-       // If it's the same, do nothing. If changing, update.
-       // Let's implement simple increment/decrement for now without double counting
+       const currentVote = voteDoc.data().value;
+       if (currentVote === desiredVote) {
+         // Remove vote if clicking the same one again
+         transaction.delete(userVoteRef);
+         currentUpvotes -= currentVote;
+       } else {
+         // Change direction
+         transaction.set(userVoteRef, { value: desiredVote });
+         currentUpvotes += (desiredVote - currentVote);
+       }
     } else {
-       transaction.set(userVoteRef, { value: isUpvote ? 1 : -1 });
-       transaction.update(postRef, { upvotes: increment(isUpvote ? 1 : -1) });
+       // New vote
+       transaction.set(userVoteRef, { value: desiredVote });
+       currentUpvotes += desiredVote;
     }
+    
+    transaction.update(postRef, { upvotes: currentUpvotes });
+    return currentUpvotes;
   });
 };
 
@@ -138,16 +154,37 @@ export const getRepliesForPost = async (postId: string): Promise<HyperlocalReply
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as HyperlocalReply));
 };
 
-// Upvote Reply
-export const toggleReplyUpvote = async (replyId: string, userId: string, isUpvote: boolean) => {
+// Upvote or Downvote a Reply
+export const toggleReplyUpvote = async (replyId: string, userId: string, isUpvote: boolean): Promise<number> => {
   const replyRef = doc(db, REPLIES_COLLECTION, replyId);
   const userVoteRef = doc(db, `${REPLIES_COLLECTION}/${replyId}/votes`, userId);
   
-  await runTransaction(db, async (transaction) => {
+  return await runTransaction(db, async (transaction) => {
+    const replyDoc = await transaction.get(replyRef);
+    if (!replyDoc.exists()) throw new Error("Reply not found");
+    
+    let currentUpvotes = replyDoc.data().upvotes || 0;
     const voteDoc = await transaction.get(userVoteRef);
-    if (!voteDoc.exists()) {
-       transaction.set(userVoteRef, { value: isUpvote ? 1 : -1 });
-       transaction.update(replyRef, { upvotes: increment(isUpvote ? 1 : -1) });
+    const desiredVote = isUpvote ? 1 : -1;
+
+    if (voteDoc.exists()) {
+       const currentVote = voteDoc.data().value;
+       if (currentVote === desiredVote) {
+         // Remove vote
+         transaction.delete(userVoteRef);
+         currentUpvotes -= currentVote;
+       } else {
+         // Change direction
+         transaction.set(userVoteRef, { value: desiredVote });
+         currentUpvotes += (desiredVote - currentVote);
+       }
+    } else {
+       // New vote
+       transaction.set(userVoteRef, { value: desiredVote });
+       currentUpvotes += desiredVote;
     }
+    
+    transaction.update(replyRef, { upvotes: currentUpvotes });
+    return currentUpvotes;
   });
 };

@@ -64,6 +64,10 @@ export default function UsersListScreen({ navigation }) {
   };
 
   const handleUserPress = async (user) => {
+    if (!currentUser?.uid || !user?.uid) {
+      console.error('User UID missing:', { currentUser, user });
+      return;
+    }
     try {
       const chatId = await getOrCreateChat(currentUser.uid, user.uid);
       navigation.navigate('ChatRoom', { chatId, otherUser: user });

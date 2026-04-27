@@ -11,6 +11,9 @@ import { db } from '../config/firebase';
  * This guarantees both users reference the same chat document.
  */
 export function getChatId(uid1, uid2) {
+  if (!uid1 || !uid2) {
+    throw new Error('Both user IDs must be provided to generate a chat ID.');
+  }
   return [uid1, uid2].sort().join('_');
 }
 

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { signOut } from 'firebase/auth';
@@ -16,11 +17,15 @@ import Avatar from '../../components/Avatar';
 import { getOrCreateChat } from '../../utils/chatUtils';
 import { colors, spacing, radius, typography, shadows } from '../../config/theme';
 
+
 export default function ProfileScreen() {
   const user = auth.currentUser;
   const [username, setUsername] = useState('');
   const [photoURL, setPhotoURL] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [displayNameInput, setDisplayNameInput] = useState(user?.displayName || '');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,6 +35,8 @@ export default function ProfileScreen() {
           if (userDoc.exists()) {
             setUsername(userDoc.data().username || '');
             setPhotoURL(userDoc.data().photoURL || user.photoURL || '');
+            setDisplayName(userDoc.data().displayName || user.displayName || '');
+            setDisplayNameInput(userDoc.data().displayName || user.displayName || '');
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
@@ -38,6 +45,28 @@ export default function ProfileScreen() {
     };
     fetchUserData();
   }, [user?.uid]);
+  const handleSaveDisplayName = async () => {
+    if (!displayNameInput.trim()) {
+      Alert.alert('Invalid Name', 'Display name cannot be empty.');
+      return;
+    }
+    setSaving(true);
+    try {
+      // Update Firebase Auth profile
+      await user.updateProfile({ displayName: displayNameInput.trim() });
+      // Update Firestore user document
+      await updateDoc(doc(db, 'users', user.uid), {
+        displayName: displayNameInput.trim(),
+      });
+      setDisplayName(displayNameInput.trim());
+      Alert.alert('Success', 'Display name updated!');
+    } catch (error) {
+      console.error('Error updating display name:', error);
+      Alert.alert('Update Failed', error.message || 'Could not update display name.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleImageUpload = async () => {
     try {
@@ -100,7 +129,7 @@ export default function ProfileScreen() {
     );
   };
 
-  const displayName = user?.displayName || 'User';
+
   const email = user?.email || '';
 
   return (
@@ -125,7 +154,23 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Display Name</Text>
-          <Text style={styles.infoValue}>{displayName}</Text>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TextInput
+              style={[styles.infoValue, { borderBottomWidth: 1, borderColor: '#ccc', minWidth: 80, padding: 0 }]}
+              value={displayNameInput}
+              onChangeText={setDisplayNameInput}
+              editable={!saving}
+              maxLength={30}
+              placeholder="Enter display name"
+            />
+            <TouchableOpacity
+              onPress={handleSaveDisplayName}
+              disabled={saving || displayNameInput.trim() === displayName}
+              style={{ marginLeft: 8, opacity: (saving || displayNameInput.trim() === displayName) ? 0.5 : 1 }}
+            >
+              <Text style={{ color: '#007AFF', fontWeight: 'bold' }}>{saving ? 'Saving...' : 'Save'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.divider} />
         <View style={styles.infoRow}>

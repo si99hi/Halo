@@ -10,9 +10,11 @@ interface ReplyThreadProps {
   allReplies: HyperlocalReply[];
   onReply: (parentId: string) => void;
   onUpvote: (replyId: string) => void;
+  onDownvote: (replyId: string) => void;
+  onAuthorPress?: (authorId: string, authorUsername: string, authorPhotoUrl?: string) => void;
 }
 
-export default function ReplyThread({ reply, allReplies, onReply, onUpvote }: ReplyThreadProps) {
+export default function ReplyThread({ reply, allReplies, onReply, onUpvote, onDownvote, onAuthorPress }: ReplyThreadProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   // Find children of this reply
@@ -41,10 +43,15 @@ export default function ReplyThread({ reply, allReplies, onReply, onUpvote }: Re
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.authorInfo} 
-            onPress={() => setCollapsed(!collapsed)}
+            onPress={() => onAuthorPress && onAuthorPress(reply.authorId, reply.authorUsername, reply.authorPhotoUrl)}
           >
             <Avatar name={reply.authorUsername} size={20} imageUrl={reply.authorPhotoUrl} />
             <Text style={styles.authorName}>@{reply.authorUsername}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={{ flex: 1, paddingVertical: 2, paddingLeft: 4 }} 
+            onPress={() => setCollapsed(!collapsed)}
+          >
             <Text style={styles.timeText}> • {formatTime(reply.createdAt)}</Text>
           </TouchableOpacity>
         </View>
@@ -57,6 +64,10 @@ export default function ReplyThread({ reply, allReplies, onReply, onUpvote }: Re
               <TouchableOpacity style={styles.actionButton} onPress={() => onUpvote(reply.id!)}>
                 <Ionicons name="arrow-up-circle-outline" size={20} color={colors.textMuted} />
                 <Text style={styles.actionText}>{reply.upvotes}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionButton} onPress={() => onDownvote(reply.id!)}>
+                <Ionicons name="arrow-down-circle-outline" size={20} color={colors.textMuted} />
               </TouchableOpacity>
               
               {/* Only allow reply if depth is less than 2 (so max depth is 0, 1, 2) */}
@@ -78,6 +89,8 @@ export default function ReplyThread({ reply, allReplies, onReply, onUpvote }: Re
                     allReplies={allReplies}
                     onReply={onReply}
                     onUpvote={onUpvote}
+                    onDownvote={onDownvote}
+                    onAuthorPress={onAuthorPress}
                   />
                 ))}
               </View>

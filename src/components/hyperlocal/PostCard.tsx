@@ -11,9 +11,10 @@ interface PostCardProps {
   onUpvote: () => void;
   onDownvote: () => void;
   currentUserId: string;
+  onAuthorPress?: (authorId: string, authorUsername: string, authorPhotoUrl?: string) => void;
 }
 
-export default function PostCard({ post, onPress, onUpvote, onDownvote, currentUserId }: PostCardProps) {
+export default function PostCard({ post, onPress, onUpvote, onDownvote, currentUserId, onAuthorPress }: PostCardProps) {
   // Simple time formatter, assuming createdAt is a Firestore timestamp or JS Date
   const formatTime = (timestamp: any) => {
     if (!timestamp) return '';
@@ -42,11 +43,14 @@ export default function PostCard({ post, onPress, onUpvote, onDownvote, currentU
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.header}>
-        <View style={styles.authorInfo}>
+        <TouchableOpacity 
+          style={styles.authorInfo}
+          onPress={() => onAuthorPress && onAuthorPress(post.authorId, post.authorUsername, post.authorPhotoUrl)}
+        >
           <Avatar name={post.authorUsername} size={24} imageUrl={post.authorPhotoUrl} />
           <Text style={styles.authorName}>@{post.authorUsername}</Text>
           <Text style={styles.timeText}> • {formatTime(post.createdAt)}</Text>
-        </View>
+        </TouchableOpacity>
         <View style={styles.badgeContainer}>
           <Text style={styles.cityBadge}>{post.city}</Text>
         </View>
