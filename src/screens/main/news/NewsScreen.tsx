@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text, TouchableOpacity, Dimensions, Platform } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,19 +15,14 @@ import { NewsCard } from '../../../components/news/NewsCard';
 import LoadingSkeleton from '../../../components/news/LoadingSkeleton';
 import { useInfiniteNews } from '../../../hooks/useInfiniteNews';
 
+const { height: screenHeight } = Dimensions.get('window');
+
 export default function NewsScreen() {
   const [city, setCity] = useState<City | null>(null);
   const currentUser = auth.currentUser;
-  const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const navigation = useNavigation();
-  
-  // Calculate exact height for one item to fill the screen between headers and tabs
-  const { height } = Dimensions.get('window');
-  // Approximate heights: TabBar = 62, CitySelector = 50 + paddings = ~60
-  const headerHeight = 60;
-  const tabBarHeight = 65; // Updated to match MainStack tab height
-  const itemHeight = height - headerHeight - tabBarHeight - insets.bottom - insets.top;
+  const [listHeight, setListHeight] = useState(screenHeight * 0.75); // fallback height
 
   // Load user's preferred city on mount
   useEffect(() => {
@@ -72,8 +67,8 @@ export default function NewsScreen() {
   const renderFooter = () => {
     if (!loading || refreshing) return null;
     return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={colors.primary} />
+      <View style={[styles.footerLoader, { height: listHeight, justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   };
@@ -81,9 +76,7 @@ export default function NewsScreen() {
   const renderEmpty = () => {
     if (loading && !refreshing) {
       return (
-        <View>
-          <LoadingSkeleton />
-          <LoadingSkeleton />
+        <View style={{ height: listHeight }}>
           <LoadingSkeleton />
         </View>
       );
@@ -91,7 +84,7 @@ export default function NewsScreen() {
 
     if (error) {
       return (
-        <View style={styles.centerContainer}>
+        <View style={[styles.centerContainer, { height: listHeight }]}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.textMuted} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
@@ -103,7 +96,7 @@ export default function NewsScreen() {
 
     if (!city) {
       return (
-        <View style={styles.centerContainer}>
+        <View style={[styles.centerContainer, { height: listHeight }]}>
           <Ionicons name="newspaper-outline" size={48} color={colors.textMuted} />
           <Text style={styles.emptyText}>City News</Text>
           <Text style={styles.emptySubtext}>Please select a city above to see local news.</Text>
@@ -112,7 +105,7 @@ export default function NewsScreen() {
     }
 
     return (
-      <View style={styles.centerContainer}>
+      <View style={[styles.centerContainer, { height: listHeight }]}>
         <Ionicons name="newspaper-outline" size={48} color={colors.textMuted} />
         <Text style={styles.emptyText}>No News Found</Text>
         <Text style={styles.emptySubtext}>Could not find any top headlines for {city}.</Text>
@@ -128,9 +121,17 @@ export default function NewsScreen() {
 
       <FlatList
         ref={flatListRef}
+        onLayout={(e) => {
+          // Get the exact pixel height of the FlatList container for perfect snapping
+          setListHeight(e.nativeEvent.layout.height);
+        }}
         data={articles}
         keyExtractor={(item, index) => `${item.url}-${index}`}
-        renderItem={({ item }) => <View style={{ height: itemHeight }}><NewsCard article={item} isFullScreen={true} /></View>}
+        renderItem={({ item }) => (
+          <View style={{ height: listHeight }}>
+            <NewsCard article={item} isFullScreen={true} />
+          </View>
+        )}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         onRefresh={onRefresh}
@@ -140,12 +141,13 @@ export default function NewsScreen() {
         contentContainerStyle={articles.length === 0 ? styles.emptyListContent : styles.listContent}
         showsVerticalScrollIndicator={false}
         pagingEnabled={true}
-        snapToInterval={itemHeight}
+        snapToInterval={listHeight}
         snapToAlignment="start"
         decelerationRate="fast"
+        disableIntervalMomentum={true}
         getItemLayout={(data, index) => ({
-          length: itemHeight,
-          offset: itemHeight * index,
+          length: listHeight,
+          offset: listHeight * index,
           index,
         })}
       />

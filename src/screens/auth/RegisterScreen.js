@@ -146,11 +146,11 @@ export default function RegisterScreen({ navigation }) {
           <Svg height="100%" width="100%" viewBox={`0 0 ${width} ${height * 0.65}`} preserveAspectRatio="none">
             <Path
               d={`M 0 ${height * 0.3} Q ${width * 0.3} ${height * 0.2} ${width * 0.6} ${height * 0.35} T ${width} ${height * 0.25} L ${width} ${height * 0.65} L 0 ${height * 0.65} Z`}
-              fill="#EFF6FF" 
+              fill="#EFF6FF"
             />
             <Path
               d={`M 0 ${height * 0.4} Q ${width * 0.4} ${height * 0.35} ${width * 0.8} ${height * 0.45} T ${width} ${height * 0.4} L ${width} ${height * 0.65} L 0 ${height * 0.65} Z`}
-              fill="#DBEAFE" 
+              fill="#DBEAFE"
             />
           </Svg>
         </View>
