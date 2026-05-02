@@ -74,9 +74,26 @@ A modern, full-featured React Native application built with Expo and Firebase. I
     Use the Expo Go app on your physical device, or press `a` for Android Emulator / `i` for iOS Simulator.
 
 ## 📱 Screenshots
+<h2 align="center">App Screenshots</h2>
 
-*(Add screenshots of your UI here: Login Screen, Chat List, Chat Room, City Feed, News Feed, Profile)*
+<p align="center">
+  <img src="assets/images/signin.png" width="250"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/images/wlcm.png" width="250"/>
+</p>
 
-## 📝 License
+<p align="center">
+  <img src="assets/images/news.png" width="250"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/images/city.png" width="250"/>
+</p>
 
-This project is licensed under the ISC License.
+<p align="center">
+  <img src="assets/images/chat.png" width="250"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/images/people.png" width="250"/>
+</p>
+
+<p align="center">
+  <img src="assets/images/image.png" width="250"/>
+</p>
